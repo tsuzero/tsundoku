@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${book.book.title} + ' — Tsundoku'">Book detail — Tsundoku</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <script th:src="@{/webjars/htmx.org/dist/htmx.min.js}"></script>
+</head>
+<body>
+
+<div th:insert="~{fragments/ui :: header}"></div>
+
+<main class="main--detail">
+
+    <a th:href="@{/books}" class="detail-back">&larr; Back to list</a>
+
+    <div class="detail-hero">
+        <img th:if="${book.book.coverUrl != null}" th:src="${book.book.coverUrl}"
+             alt="Cover" class="detail-cover"/>
+        <div class="detail-body">
+            <h1 th:text="${book.book.title}" class="detail-title"></h1>
+            <p th:text="${book.book.authorName}" class="detail-author"></p>
+            <div class="detail-meta">
+                <span th:if="${book.stars != ''}" th:text="${book.stars}" class="detail-stars"></span>
+                <span th:if="${book.book.averageRating != null}" th:text="${book.book.averageRating} + ' / 5'"></span>
+                <span th:if="${book.book.yearPublished != null}" th:text="${book.book.yearPublished}"></span>
+            </div>
+            <details th:if="${book.book.description != null}" class="detail-desc">
+                <summary>Description</summary>
+                <p th:text="${book.book.description}"></p>
+            </details>
+        </div>
+    </div>
+
+    <div class="detail-isbn">
+        <span th:if="${book.book.isbn13 != null}" th:text="'ISBN-13: ' + ${book.book.isbn13}"></span>
+        <span th:if="${book.book.isbn != null and book.book.isbn13 == null}" th:text="'ISBN: ' + ${book.book.isbn}"></span>
+        <span th:if="${book.book.dateAddedToShelf != null}"
+              th:text="'Added to shelf: ' + ${#temporals.format(book.book.dateAddedToShelf, 'd.M.yyyy')}"></span>
+    </div>
+
+    <div class="detail-availability" th:insert="~{fragments/ui :: availabilitySection}"></div>
+
+</main>
+
+<div th:insert="~{fragments/ui :: footer}"></div>
+
+</body>
+</html>

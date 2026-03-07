@@ -1,0 +1,41 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:best-practices",
+    ":dependencyDashboard",
+    ":automergeMinor",
+    ":automergePatch",
+    "schedule:nonOfficeHours"
+  ],
+  "osvVulnerabilityAlerts": true,
+  "vulnerabilityAlerts": {
+    "automerge": true,
+    "labels": ["security"]
+  },
+  "packageRules": [
+    {
+      "description": "Automerge non-major updates after CI passes",
+      "matchUpdateTypes": ["minor", "patch", "digest", "pin"],
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash"
+    },
+    {
+      "description": "Group Spring Boot updates",
+      "matchPackagePatterns": ["^org.springframework"],
+      "groupName": "Spring Boot"
+    },
+    {
+      "description": "Group all Maven plugin updates",
+      "matchManagers": ["maven"],
+      "matchDepTypes": ["plugin"],
+      "groupName": "Maven plugins"
+    },
+    {
+      "description": "Require manual review for major updates",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "labels": ["major-update"]
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+goodreads:
+  user-id: "35638089"   # Set your Goodreads user ID here
+  shelf: "to-read"
+
+finna:
+  base-url: "https://api.finna.fi/v1"
+  helmet-building-filter: "0/Helmet/"
+  timeout-seconds: 10
+
+sync:
+  goodreads:
+    cron: "0 0 6 * * *"       # 6 am daily
+  finna:
+    fixed-delay-ms: 300000    # 5 min between batches
+    batch-size: 20
+
+features:
+  goodreads-sync-enabled: true   # set false to disable daily scheduled sync
+  finna-sync-enabled: true       # set false to disable 5-min polling
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tsundoku
+    username: tsundoku
+    password: tsundoku
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

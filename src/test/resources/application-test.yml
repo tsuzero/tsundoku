@@ -1,0 +1,23 @@
+goodreads:
+  user-id: "test-user"
+  shelf: "to-read"
+
+finna:
+  base-url: "https://api.finna.fi/v1"
+  helmet-building-filter: "0/Helmet/"
+  timeout-seconds: 10
+
+sync:
+  goodreads:
+    cron: "0 0 6 * * *"
+  finna:
+    fixed-delay-ms: 3600000    # 1 hour — don't trigger in tests
+    batch-size: 20
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true

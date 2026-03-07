@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ===================== HEADER ===================== -->
+<header th:fragment="header" class="header">
+    <a th:href="@{/books}" class="header__title">Tsundoku</a>
+    <span class="header__tagline">Your unread pile, library-checked</span>
+</header>
+
+<!-- ===================== FOOTER ===================== -->
+<footer th:fragment="footer" class="footer">
+    Availability data from <a href="https://finna.fi">Finna / Helmet</a>.
+</footer>
+
+<!-- ===================== BOOK LIST ===================== -->
+<div th:fragment="bookList" id="book-list">
+    <div th:if="${books.empty}" class="empty-state">No books found.</div>
+    <ul th:unless="${books.empty}" class="book-list">
+        <li th:each="bvm : ${books}" th:insert="~{fragments/ui :: bookCard(${bvm})}"></li>
+    </ul>
+</div>
+
+<!-- ===================== BOOK CARD ===================== -->
+<li th:fragment="bookCard(bvm)" class="book-card">
+    <a th:href="@{/books/{id}(id=${bvm.book.id})}" class="book-card__cover-link">
+        <img th:if="${bvm.book.coverUrl != null}" th:src="${bvm.book.coverUrl}"
+             alt="Cover" class="book-card__cover"/>
+        <div th:unless="${bvm.book.coverUrl != null}" class="book-card__cover-placeholder">No cover</div>
+    </a>
+    <div class="book-card__body">
+        <div class="book-card__header">
+            <div>
+                <a th:href="@{/books/{id}(id=${bvm.book.id})}"
+                   th:text="${bvm.book.title}"
+                   class="book-card__title"></a>
+                <p th:text="${bvm.book.authorName}" class="book-card__author"></p>
+            </div>
+            <div th:insert="~{fragments/ui :: availabilityBadge(${bvm.book.availability})}"></div>
+        </div>
+        <div class="book-card__meta">
+            <span th:if="${bvm.stars != ''}" th:text="${bvm.stars}" class="book-card__stars"></span>
+            <span th:if="${bvm.book.yearPublished != null}" th:text="${bvm.book.yearPublished}"></span>
+            <span th:if="${bvm.book.dateAddedToShelf != null}"
+                  th:text="'Added ' + ${#temporals.format(bvm.book.dateAddedToShelf, 'd.M.yyyy')}"></span>
+        </div>
+        <details th:if="${bvm.book.description != null}">
+            <summary>Description</summary>
+            <p th:text="${bvm.book.description}"></p>
+        </details>
+    </div>
+</li>
+
+<!-- ===================== AVAILABILITY BADGE ===================== -->
+<span th:fragment="availabilityBadge(av)" class="availability-badge"
+      th:classappend="${av != null and av.available == true} ? 'availability-badge--available' :
+                     (${av != null and av.available == false} ? 'availability-badge--not-found' :
+                      'availability-badge--unchecked')"
+      th:text="${av != null and av.available == true} ? 'At library' + (${av.branchCount != null and av.branchCount > 0} ? ' (' + ${av.branchCount} + ')' : '') :
+               (${av != null and av.available == false} ? 'Not found' : 'Unchecked')">
+</span>
+
+<!-- ===================== SYNC STATUS ===================== -->
+<aside th:fragment="syncStatus" id="sync-status" class="card sync-status">
+    <h2 class="sync-status__title">Sync status</h2>
+    <dl class="sync-dl" th:with="grList=${syncLogs.?[syncType == 'GOODREADS']}, fiList=${syncLogs.?[syncType == 'FINNA']}">
+        <div class="sync-row">
+            <dt class="sync-dt">Goodreads</dt>
+            <dd class="sync-dd" th:text="${grList.empty} ? '—' : ${grList[0].status}"></dd>
+        </div>
+        <div class="sync-row">
+            <dt class="sync-dt">Last run</dt>
+            <dd class="sync-dd" th:text="${grList.empty or grList[0].finishedAt == null} ? '—' : ${#temporals.format(grList[0].finishedAt, 'd.M.yyyy HH:mm')}"></dd>
+        </div>
+        <div class="sync-row">
+            <dt class="sync-dt">Books synced</dt>
+            <dd class="sync-dd" th:text="${grList.empty} ? '—' : ${grList[0].booksProcessed}"></dd>
+        </div>
+        <div class="sync-row">
+            <dt class="sync-dt">Finna</dt>
+            <dd class="sync-dd" th:text="${fiList.empty} ? '—' : ${fiList[0].status}"></dd>
+        </div>
+    </dl>
+    <button hx-post="/sync/goodreads" hx-target="#sync-status" hx-swap="outerHTML"
+            class="btn btn--primary">
+        Sync Goodreads now
+    </button>
+</aside>
+
+<!-- ===================== AVAILABILITY SECTION ===================== -->
+<section th:fragment="availabilitySection" id="availability-section" class="card">
+    <div class="availability-section__header">
+        <h2 class="availability-section__title">Helmet library availability</h2>
+        <button th:attr="hx-post=@{/books/{id}/availability/refresh(id=${book.book.id})}"
+                hx-target="#availability-section" hx-swap="outerHTML"
+                class="btn btn--secondary">
+            Refresh
+        </button>
+    </div>
+
+    <div th:with="av=${book.book.availability}">
+        <div th:if="${av == null or av.checkedAt == null}" class="avail-pending">
+            Not yet checked. Click Refresh to check now.
+        </div>
+        <div th:unless="${av == null or av.checkedAt == null}">
+            <div th:insert="~{fragments/ui :: availabilityBadge(${av})}"></div>
+            <dl class="avail-dl">
+                <div class="avail-row">
+                    <dt class="avail-dt">Checked at</dt>
+                    <dd class="avail-dd" th:text="${#temporals.format(av.checkedAt, 'd.M.yyyy HH:mm')}"></dd>
+                </div>
+                <div th:if="${av.branchCount != null and av.branchCount > 0}" class="avail-row">
+                    <dt class="avail-dt">Branches</dt>
+                    <dd class="avail-dd">
+                        <span th:each="branch, iter : ${av.branches}"
+                              th:text="${branch} + (${iter.last} ? '' : ', ')"></span>
+                    </dd>
+                </div>
+                <div th:if="${av.finnaRecordId != null}" class="avail-row">
+                    <dt class="avail-dt">Finna record</dt>
+                    <dd class="avail-dd">
+                        <a th:href="'https://helmet.finna.fi/Record/' + ${av.finnaRecordId}"
+                           th:text="${av.finnaRecordId}"
+                           target="_blank"
+                           class="avail-link"></a>
+                    </dd>
+                </div>
+                <div class="avail-row">
+                    <dt class="avail-dt">Strategy</dt>
+                    <dd class="avail-dd avail-dd--small" th:text="${av.searchStrategy}"></dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+</section>
+
+</body>
+</html>
