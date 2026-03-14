@@ -10,32 +10,49 @@
   "osvVulnerabilityAlerts": true,
   "vulnerabilityAlerts": {
     "automerge": true,
-    "labels": ["security"]
+    "labels": [
+      "security"
+    ]
   },
   "packageRules": [
     {
       "description": "Automerge non-major updates after CI passes",
-      "matchUpdateTypes": ["minor", "patch", "digest", "pin"],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest",
+        "pin"
+      ],
       "automerge": true,
       "automergeType": "pr",
       "automergeStrategy": "squash"
     },
     {
       "description": "Group Spring Boot updates",
-      "matchPackagePatterns": ["^org.springframework"],
-      "groupName": "Spring Boot"
+      "groupName": "Spring Boot",
+      "matchPackageNames": [
+        "/^org.springframework/"
+      ]
     },
     {
       "description": "Group all Maven plugin updates",
-      "matchManagers": ["maven"],
-      "matchDepTypes": ["plugin"],
+      "matchManagers": [
+        "maven"
+      ],
+      "matchDepTypes": [
+        "plugin"
+      ],
       "groupName": "Maven plugins"
     },
     {
       "description": "Require manual review for major updates",
-      "matchUpdateTypes": ["major"],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "automerge": false,
-      "labels": ["major-update"]
+      "labels": [
+        "major-update"
+      ]
     }
   ]
 }
